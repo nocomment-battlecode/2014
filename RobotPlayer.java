@@ -1,44 +1,38 @@
-package examplefuncsplayer;
+package teamxxx;
 
 import battlecode.common.*;
-import java.util.*;
 
 public class RobotPlayer
 {
 	public static void run(RobotController rc)
 	{
+		BasicRobot robot = null;
 		while(true)
 		{
 			try
 			{
 				switch (rc.getType())
 				{
-				case RobotType.HQ:
-					hqCode();
+				case HQ:
+					robot = new HQRobot();
 					break;
-				case RobotType.SOLDIER:
-					cowboyCode();
+				case SOLDIER:
+					robot = new CowboyRobot();
 					break;
-				case RobotType.NOISETOWER:
-					towerCode();
+				case NOISETOWER:
+					robot = new TowerRobot();
 					break;
-				case RobotType.PASTR:
-					pastureCode();
+				case PASTR:
+					robot = new PastureRobot();
 					break;
 				default:
 					break;
 				}
+				robot.run(rc);
 			}
 			catch(Exception e)
 			{
 			}
 		}
 	}
-	
-	// store locations in hash grid
-	
-	
-	
-	
-	
 }
