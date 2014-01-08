@@ -1,5 +1,7 @@
 package examplefuncsplayer;
 
+//I made some stupid changes
+
 import battlecode.common.Direction;
 import battlecode.common.GameConstants;
 import battlecode.common.RobotController;
