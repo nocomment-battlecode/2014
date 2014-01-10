@@ -96,14 +96,17 @@ public class TowerRobot extends BasicRobot
 	{
 		try
 		{
-			rc.setIndicatorString(2, "finding pastrs");
-			ArrayList<MapLocation> pastrs = new ArrayList<MapLocation>();
-			MapLocation[] pastrArray = rc.sensePastrLocations(rc.getTeam());
-			for (int i = 0; i < pastrArray.length; i++)
+			if (true)
 			{
-				pastrs.add(pastrArray[i]);
+				rc.setIndicatorString(2, "finding pastrs");
+				ArrayList<MapLocation> pastrs = new ArrayList<MapLocation>();
+				MapLocation[] pastrArray = rc.sensePastrLocations(rc.getTeam());
+				for (int i = 0; i < pastrArray.length; i++)
+				{
+					pastrs.add(pastrArray[i]);
+				}
+				works = filterInRange(pastrs);
 			}
-			works = filterInRange(pastrs);
 		}
 		catch (Exception e)
 		{

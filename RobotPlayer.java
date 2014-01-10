@@ -1,11 +1,15 @@
 package teamxxx;
 
 import battlecode.common.*;
+import java.util.Random;
+import java.util.ArrayList;
 
 public class RobotPlayer
 {
-	public static void run(RobotController rc)
+	static RobotController rc;
+	public static void run(RobotController myRC)
 	{
+		rc = myRC;
 		BasicRobot robot = null;
 		while(true)
 		{
@@ -32,6 +36,7 @@ public class RobotPlayer
 			}
 			catch(Exception e)
 			{
+				e.printStackTrace();
 			}
 		}
 	}
