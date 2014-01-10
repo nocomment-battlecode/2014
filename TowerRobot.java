@@ -10,6 +10,16 @@ public class TowerRobot extends BasicRobot
 	}
 	public void run(RobotController myRC)
 	{
+		rc = myRC;
+		try
+		{
+			MapLocation attackLocation = new MapLocation(rc.getLocation().x + 10, rc.getLocation().y + 10);
+			rc.attackSquare(attackLocation);
+		}
+		catch (Exception e)
+		{
+			rc.setIndicatorString(0,"error1");
+		}
 		rc.yield();
 	}
 	// noise tower attack
@@ -17,7 +27,6 @@ public class TowerRobot extends BasicRobot
 	{
 		try
 		{
-		// code to get attacklocation
 		if (true)
 		{
 			rc.attackSquare(attackLocation);
@@ -29,7 +38,7 @@ public class TowerRobot extends BasicRobot
 		}
 		catch (Exception e)
 		{
-			
+			rc.setIndicatorString(0,"error2");
 		}
 	}
 }
