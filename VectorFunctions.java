@@ -4,37 +4,46 @@ import java.util.ArrayList;
 
 import battlecode.common.MapLocation;
 
-public class VectorFunctions {
-	public static MapLocation findClosest(MapLocation[] manyLocs, MapLocation point){
+public class VectorFunctions
+{
+	public static MapLocation findClosest(MapLocation[] locList, MapLocation currentLoc)
+	{
 		int closestDist = 10000000;
-		int challengerDist = closestDist;
 		MapLocation closestLoc = null;
-		for(MapLocation m:manyLocs){
-			challengerDist = point.distanceSquaredTo(m);
-			if(challengerDist<closestDist){
-				closestDist = challengerDist;
-				closestLoc = m;
+		for(MapLocation tryLoc: locList)
+		{
+			int tryDist = currentLoc.distanceSquaredTo(tryLoc);
+			if (tryDist < closestDist)
+			{
+				closestDist = tryDist;
+				closestLoc = tryLoc;
 			}
 		}
 		return closestLoc;
 	}
-	public static MapLocation mladd(MapLocation m1, MapLocation m2){
+	
+	public static MapLocation mladd(MapLocation m1, MapLocation m2)
+	{
 		return new MapLocation(m1.x+m2.x,m1.y+m2.y);
 	}
 	
-	public static MapLocation mldivide(MapLocation bigM, int divisor){
+	public static MapLocation mldivide(MapLocation bigM, int divisor)
+	{
 		return new MapLocation(bigM.x/divisor, bigM.y/divisor);
 	}
 	
-	public static MapLocation mlmultiply(MapLocation bigM, int factor){
+	public static MapLocation mlmultiply(MapLocation bigM, int factor)
+	{
 		return new MapLocation(bigM.x*factor, bigM.y*factor);
 	}
 	
-	public static int locToInt(MapLocation m){
+	public static int locToInt(MapLocation m)
+	{
 		return (m.x*100 + m.y);
 	}
 	
-	public static MapLocation intToLoc(int i){
+	public static MapLocation intToLoc(int i)
+	{
 		return new MapLocation(i/100,i%100);
 	}
 	
@@ -44,7 +53,8 @@ public class VectorFunctions {
 			System.out.println("("+actualLoc.x+","+actualLoc.y+")");
 		}
 	}
-	public static MapLocation bigBoxCenter(MapLocation bigBoxLoc, int bigBoxSize){
+	public static MapLocation bigBoxCenter(MapLocation bigBoxLoc, int bigBoxSize)
+	{
 		return mladd(mlmultiply(bigBoxLoc,bigBoxSize),new MapLocation(bigBoxSize/2,bigBoxSize/2));
 	}
 }

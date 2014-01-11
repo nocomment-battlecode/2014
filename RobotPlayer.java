@@ -1,12 +1,10 @@
 package teamxxx;
 
-import battlecode.common.*;
-import java.util.Random;
-import java.util.ArrayList;
+import battlecode.common.RobotController;
 
 public class RobotPlayer
 {
-	static RobotController rc;
+	public static RobotController rc;
 	public static void run(RobotController myRC)
 	{
 		rc = myRC;
@@ -17,17 +15,17 @@ public class RobotPlayer
 			{
 				switch (rc.getType())
 				{
-				case HQ:
-					robot = new HQRobot();
-					break;
 				case SOLDIER:
-					robot = new CowboyRobot();
-					break;
-				case NOISETOWER:
-					robot = new TowerRobot();
+					robot = new CowboyRobot(rc);
 					break;
 				case PASTR:
-					robot = new PastureRobot();
+					robot = new PastureRobot(rc);
+					break;
+				case NOISETOWER:
+					robot = new TowerRobot(rc);
+					break;
+				case HQ:
+					robot = new HQRobot(rc);
 					break;
 				default:
 					break;

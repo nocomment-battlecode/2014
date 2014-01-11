@@ -24,8 +24,9 @@ public class TowerRobot extends BasicRobot
 		Team team = Team.A;
 	}
 */
-	public TowerRobot() throws GameActionException
+	public TowerRobot(RobotController myRC) throws GameActionException
 	{
+		super(myRC);
 	}
 	public void run(RobotController myRC)
 	{

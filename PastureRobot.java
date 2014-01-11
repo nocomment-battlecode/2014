@@ -5,8 +5,9 @@ import battlecode.common.*;
 public class PastureRobot extends BasicRobot
 {
 	public RobotController rc;
-	public PastureRobot() throws GameActionException
+	public PastureRobot(RobotController myRC) throws GameActionException
 	{
+		super(myRC);
 	}
 	public void run(RobotController myRC)
 	{
