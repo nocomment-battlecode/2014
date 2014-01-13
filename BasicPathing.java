@@ -2,7 +2,7 @@ package team089;
 
 import java.util.ArrayList;
 
-import coarsenserPlayer.RobotPlayer;
+//import coarsenserPlayer.RobotPlayer;
 
 import battlecode.common.*;
 

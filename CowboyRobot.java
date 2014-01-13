@@ -39,7 +39,8 @@ public class CowboyRobot extends BasicRobot
 					runSoldier();
 				}
 			}catch (Exception e){
-				e.printStackTrace();
+				rc.setIndicatorString(0, "dumb error 1");
+				//e.printStackTrace();
 			}
 			rc.yield();
 		}

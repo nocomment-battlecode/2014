@@ -30,7 +30,8 @@ public class HQRobot extends BasicRobot
 				try{
 					runHQ();
 				}catch (Exception e){
-					e.printStackTrace();
+					rc.setIndicatorString(0, "dumb error 1");
+					//e.printStackTrace();
 				}
 				rc.yield();
 			}			
@@ -55,6 +56,7 @@ public class HQRobot extends BasicRobot
 		}
 		catch (Exception e)
 		{
+			rc.setIndicatorString(0, "dumb error 2");
 		}
 		rc.yield();
 	}

@@ -11,6 +11,7 @@ public class PastureRobot extends BasicRobot
 	}
 	public void run(RobotController myRC)
 	{
+		rc = myRC;
 		rc.yield();
 	}
 	public void pastureCode()
