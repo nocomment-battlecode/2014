@@ -29,18 +29,21 @@ public class CowboyRobot extends BasicRobot
 		//VectorFunctions.printPath(path,bigBoxSize);
 		while(true){
 			try{
-				if (rc.sensePastrLocations(rc.getTeam()).length < 2)
+				if (rc.isActive())
 				{
-					rc.construct(RobotType.PASTR);
-					rc.setIndicatorString(0, ""+rc.sensePastrLocations(rc.getTeam()).length);
-				}
-				else
-				{
-					runSoldier();
+					if (rc.sensePastrLocations(rc.getTeam()).length < 2)
+					{
+						rc.construct(RobotType.PASTR);
+						rc.setIndicatorString(0, ""+rc.sensePastrLocations(rc.getTeam()).length);
+					}
+					else
+					{
+						runSoldier();
+					}
 				}
 			}catch (Exception e){
 				rc.setIndicatorString(0, "dumb error 1");
-				//e.printStackTrace();
+				e.printStackTrace();
 			}
 			rc.yield();
 		}
@@ -52,10 +55,13 @@ public class CowboyRobot extends BasicRobot
 		if(enemyRobots.length>0){//SHOOT AT, OR RUN TOWARDS, ENEMIES
 			MapLocation[] robotLocations = VectorFunctions.robotsToLocations(enemyRobots, rc);
 			MapLocation closestEnemyLoc = VectorFunctions.findClosest(robotLocations, rc.getLocation());
-			if(closestEnemyLoc.distanceSquaredTo(rc.getLocation())<rc.getType().attackRadiusMaxSquared){//close enough to shoot
-				if(rc.isActive()){
-					rc.attackSquare(closestEnemyLoc);
-				}
+			if (closestEnemyLoc != null)
+			{
+				if(closestEnemyLoc.distanceSquaredTo(rc.getLocation())<rc.getType().attackRadiusMaxSquared){//close enough to shoot
+					if(rc.isActive()){
+						rc.attackSquare(closestEnemyLoc);
+					}
+			}
 			}else{//not close enough to shoot, so try to go shoot
 				Direction towardClosest = rc.getLocation().directionTo(closestEnemyLoc);
 				simpleMove(towardClosest);

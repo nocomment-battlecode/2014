@@ -36,7 +36,7 @@ public class HQRobot extends BasicRobot
 				rc.yield();
 			}			
 			
-/*			// update enemy pasture locations
+			/*// update enemy pasture locations
 			DataCache.enemyPastureLocs = rc.sensePastrLocations(rc.getTeam().opponent());
 			DataCache.numPastures = rc.sensePastrLocations(rc.getTeam()).length;
 			tryToSpawn(DataCache.enemyHQDir); // spawn robots when possible
