@@ -1,10 +1,12 @@
-package teamxxx;
+package team089;
 
 import battlecode.common.*;
+import java.util.Random;
 
 public class HQRobot extends BasicRobot
 {
 	public RobotController rc;
+	static Random randall = new Random();
 	public Robot[] enemyRobots;
 
 	public HQRobot(RobotController myRC) throws GameActionException
@@ -17,15 +19,32 @@ public class HQRobot extends BasicRobot
 		rc = myRC;
 		try
 		{
-			// update enemy pasture locations
+			Comms.rc = myRC;
+			randall.setSeed(rc.getRobot().getID());
+			rc.broadcast(101,VectorFunctions.locToInt(VectorFunctions.mldivide(rc.senseHQLocation(),DataCache.bigBoxSize)));//this tells soldiers to stay near HQ to start
+			rc.broadcast(102,-1);//and to remain in squad 1
+			tryToSpawn(DataCache.enemyHQDir);
+			BreadthFirst.init(rc, DataCache.bigBoxSize);
+			DataCache.rallyPoint = VectorFunctions.mladd(VectorFunctions.mldivide(VectorFunctions.mlsubtract(rc.senseEnemyHQLocation(),rc.senseHQLocation()),3),rc.senseHQLocation());
+			while(true){
+				try{
+					runHQ();
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+				rc.yield();
+			}			
+			
+/*			// update enemy pasture locations
 			DataCache.enemyPastureLocs = rc.sensePastrLocations(rc.getTeam().opponent());
+			DataCache.numPastures = rc.sensePastrLocations(rc.getTeam()).length;
 			tryToSpawn(DataCache.enemyHQDir); // spawn robots when possible
 			// attack enemy robots when they are in range
 			Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class, DataCache.HQShootRangeSq, rc.getTeam().opponent());
 			if (enemyRobots.length > 0)
 			{
 				attack();
-			}
+			}*/
 /*			MapLocation[] enemyPastures = rc.sensePastrLocations(rc.getTeam().opponent());
 			if (enemyPastures.length != 0)
 			{
@@ -38,6 +57,23 @@ public class HQRobot extends BasicRobot
 		{
 		}
 		rc.yield();
+	}
+	
+	private void runHQ() throws GameActionException
+	{
+		//TODO consider updating the rally point to an allied pastr 
+		
+		//tell them to go to the rally point
+		Comms.findPathAndBroadcast(1,rc.getLocation(),DataCache.rallyPoint,DataCache.bigBoxSize,2);
+		
+		//if the enemy builds a pastr, tell sqaud 2 to go there.
+		MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+		if(enemyPastrs.length>0){
+			Comms.findPathAndBroadcast(2,DataCache.rallyPoint,enemyPastrs[0],DataCache.bigBoxSize,2);//for some reason, they are not getting this message
+		}
+		
+		//after telling them where to go, consider spawning
+		tryToSpawn(DataCache.enemyHQDir);
 	}
 
 	//Check if a robot is spawnable in the desired direction and spawn one if it is

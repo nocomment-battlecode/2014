@@ -1,8 +1,8 @@
-package teamxxx;
+package team089;
 
 import java.util.ArrayList;
 
-import battlecode.common.MapLocation;
+import battlecode.common.*;
 
 public class VectorFunctions
 {
@@ -12,11 +12,14 @@ public class VectorFunctions
 		MapLocation closestLoc = null;
 		for(MapLocation tryLoc: locList)
 		{
-			int tryDist = currentLoc.distanceSquaredTo(tryLoc);
-			if (tryDist < closestDist)
+			if (tryLoc.x != DataCache.enemyHQLoc.x || tryLoc.y != DataCache.enemyHQLoc.y)
 			{
-				closestDist = tryDist;
-				closestLoc = tryLoc;
+				int tryDist = currentLoc.distanceSquaredTo(tryLoc);
+				if (tryDist < closestDist)
+				{
+					closestDist = tryDist;
+					closestLoc = tryLoc;
+				}
 			}
 		}
 		return closestLoc;
@@ -24,17 +27,22 @@ public class VectorFunctions
 	
 	public static MapLocation mladd(MapLocation m1, MapLocation m2)
 	{
-		return new MapLocation(m1.x+m2.x,m1.y+m2.y);
+		return new MapLocation(m1.x+m2.x, m1.y+m2.y);
 	}
 	
-	public static MapLocation mldivide(MapLocation bigM, int divisor)
+	public static MapLocation mlsubtract(MapLocation m1, MapLocation m2)
 	{
-		return new MapLocation(bigM.x/divisor, bigM.y/divisor);
+		return new MapLocation(m1.x-m2.x,m1.y-m2.y);
 	}
 	
 	public static MapLocation mlmultiply(MapLocation bigM, int factor)
 	{
 		return new MapLocation(bigM.x*factor, bigM.y*factor);
+	}
+	
+	public static MapLocation mldivide(MapLocation bigM, int divisor)
+	{
+		return new MapLocation(bigM.x/divisor, bigM.y/divisor);
 	}
 	
 	public static int locToInt(MapLocation m)
@@ -47,15 +55,26 @@ public class VectorFunctions
 		return new MapLocation(i/100,i%100);
 	}
 	
-	public static void printPath(ArrayList<MapLocation> path, int bigBoxSize){
-		for(MapLocation m:path){
+	public static void printPath(ArrayList<MapLocation> path, int bigBoxSize)
+	{
+		for(MapLocation m:path)
+		{
 			MapLocation actualLoc = bigBoxCenter(m,bigBoxSize);
 			System.out.println("("+actualLoc.x+","+actualLoc.y+")");
 		}
 	}
-	public static MapLocation bigBoxCenter(MapLocation bigBoxLoc, int bigBoxSize)
-	{
+	
+	public static MapLocation bigBoxCenter(MapLocation bigBoxLoc, int bigBoxSize){
 		return mladd(mlmultiply(bigBoxLoc,bigBoxSize),new MapLocation(bigBoxSize/2,bigBoxSize/2));
 	}
+	
+	public static MapLocation[] robotsToLocations(Robot[] robotList,RobotController rc) throws GameActionException{
+		MapLocation[] robotLocations = new MapLocation[robotList.length];
+		for(int i=0;i<robotList.length;i++){
+			Robot anEnemy = robotList[i];
+			RobotInfo anEnemyInfo = rc.senseRobotInfo(anEnemy);
+			robotLocations[i] = anEnemyInfo.location;
+		}
+		return robotLocations;
+	}
 }
-

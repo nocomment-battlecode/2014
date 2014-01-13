@@ -1,11 +1,15 @@
-package teamxxx;
+package team089;
 
-import battlecode.common.*;
 import java.util.ArrayList;
 
-public class BasicPathing
-{
+import coarsenserPlayer.RobotPlayer;
+
+import battlecode.common.*;
+
+public class BasicPathing{
+	
 	static ArrayList<MapLocation> snailTrail = new ArrayList<MapLocation>();
+	
 	public static boolean canMove(Direction dir, boolean selfAvoiding, RobotController rc)
 	{
 		//include both rc.canMove and the snail Trail requirements
@@ -28,7 +32,7 @@ public class BasicPathing
 		return rc.canMove(dir);
 	}
 	
-	public static void tryToMove(Direction chosenDirection, boolean selfAvoiding, RobotController rc, int[] directionalLooks, Direction[] allDirections) throws GameActionException
+	public static void tryToMove(Direction chosenDirection, boolean selfAvoiding, RobotController rc) throws GameActionException
 	{
 		while (snailTrail.size() < 2)
 		{
@@ -38,10 +42,10 @@ public class BasicPathing
 		{
 			snailTrail.remove(0);
 			snailTrail.add(rc.getLocation());
-			for (int directionalOffset: directionalLooks)
+			for (int dirOffset: DataCache.dirOffsets)
 			{
 				int forwardInt = chosenDirection.ordinal();
-				Direction trialDir = allDirections[(forwardInt+directionalOffset + 8) % 8];
+				Direction trialDir = DataCache.dirValues[(forwardInt + dirOffset + 8) % 8];
 				if (canMove(trialDir, selfAvoiding, rc))
 				{
 					rc.move(trialDir);

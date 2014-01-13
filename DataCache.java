@@ -1,4 +1,4 @@
-package teamxxx;
+package team089;
 
 import battlecode.common.*;
 
@@ -14,8 +14,10 @@ public class DataCache
 	public static int numRobots = numCowboys + 2 * numPastures + 3 * numTowers;
 	public static MapLocation HQLoc;
 	public static MapLocation enemyHQLoc;
+	public static MapLocation rallyPoint;
 	public static Direction enemyHQDir;
 	public static int HQShootRangeSq = 15;
+	public static int bigBoxSize = 5;
 	public static MapLocation[] enemyPastureLocs;
 	
 	public static void initialize(BasicRobot myRobot)

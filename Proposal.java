@@ -1,4 +1,4 @@
-package teamxxx;
+package team089;
 
 import java.util.ArrayList;
 
@@ -26,7 +26,7 @@ public class Proposal {
 			}
 			int val = BreadthFirst.getMapData(p.loc);
 			if(val>0){//not off-map or entirely void-filled
-				p.dist+=(val-10000)*10;//TODO evaluate fudge factor of 10 for importance of void spaces
+				p.dist+=(val-10000)*50;//TODO evaluate fudge factor of 10 for importance of void spaces
 				proposalList.add(p);
 			}
 		}

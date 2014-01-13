@@ -1,4 +1,4 @@
-package teamxxx;
+package team089;
 
 import java.util.ArrayList;
 
@@ -125,7 +125,8 @@ public class BreadthFirst {
 	//this function should truncate the path as you move along it, and also give the next direction.
 	public static Direction getNextDirection(ArrayList<MapLocation> path, int bigBoxSize){
 		//just check the bottom member of the path, to see if it needs truncating
-		if(VectorFunctions.mldivide(rc.getLocation(),bigBoxSize).equals(path.get(0))){
+		if(VectorFunctions.mldivide(rc.getLocation(),bigBoxSize).equals(path.get(0))
+				&&path.size()>1){//will not delete the path entirely
 			path.remove(0);
 		}
 		return rc.getLocation().directionTo(VectorFunctions.bigBoxCenter(path.get(0),bigBoxSize));
