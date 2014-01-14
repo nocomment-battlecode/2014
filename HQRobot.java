@@ -7,7 +7,6 @@ public class HQRobot extends BasicRobot
 {
 	public RobotController rc;
 	static Random randall = new Random();
-	public Robot[] enemyRobots;
 
 	public HQRobot(RobotController myRC) throws GameActionException
 	{
@@ -35,7 +34,7 @@ public class HQRobot extends BasicRobot
 				}
 				rc.yield();
 			}			
-			
+
 			/*// update enemy pasture locations
 			DataCache.enemyPastureLocs = rc.sensePastrLocations(rc.getTeam().opponent());
 			DataCache.numPastures = rc.sensePastrLocations(rc.getTeam()).length;
@@ -46,7 +45,7 @@ public class HQRobot extends BasicRobot
 			{
 				attack();
 			}*/
-/*			MapLocation[] enemyPastures = rc.sensePastrLocations(rc.getTeam().opponent());
+			/*			MapLocation[] enemyPastures = rc.sensePastrLocations(rc.getTeam().opponent());
 			if (enemyPastures.length != 0)
 			{
 				rc.setIndicatorString(0, "x: " + enemyPastures[0].x + "y: " + enemyPastures[0].y);
@@ -60,20 +59,21 @@ public class HQRobot extends BasicRobot
 		}
 		rc.yield();
 	}
-	
+
 	private void runHQ() throws GameActionException
 	{
 		//TODO consider updating the rally point to an allied pastr 
-		
+
 		//tell them to go to the rally point
 		Comms.findPathAndBroadcast(1,rc.getLocation(),DataCache.rallyPoint,DataCache.bigBoxSize,2);
-		
+
 		//if the enemy builds a pastr, tell sqaud 2 to go there.
 		MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
 		if(enemyPastrs.length>0){
 			Comms.findPathAndBroadcast(2,DataCache.rallyPoint,enemyPastrs[0],DataCache.bigBoxSize,2);//for some reason, they are not getting this message
 		}
-		
+		//rc.attackSquare(new MapLocation(rc.getLocation().x+3, rc.getLocation().y));
+		attack();
 		//after telling them where to go, consider spawning
 		tryToSpawn(DataCache.enemyHQDir);
 	}
@@ -100,15 +100,15 @@ public class HQRobot extends BasicRobot
 	// attack the closest enemy robot, will code in a better heuristic later (most net damage = damage to enemy - damage to self)
 	public void attack() throws GameActionException
 	{
-		MapLocation[] enemyLocs = new MapLocation[enemyRobots.length];
-		for(int i=0; i < enemyRobots.length; i++)
-		{
-			Robot enemyRobot = enemyRobots[i];
-			RobotInfo enemyInfo = rc.senseRobotInfo(enemyRobot);
-			enemyLocs[i] = enemyInfo.location;
+		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,rc.getType().attackRadiusMaxSquared,rc.getTeam().opponent());
+		if(enemyRobots.length>0){//SHOOT AT, OR RUN TOWARDS, ENEMIES
+			MapLocation[] robotLocations = VectorFunctions.robotsToLocations(enemyRobots, rc);
+			MapLocation closestEnemyLoc = VectorFunctions.findClosest(robotLocations, rc.getLocation());
+			if (closestEnemyLoc != null)
+			{
+				rc.attackSquare(closestEnemyLoc);
+			}
 		}
-		MapLocation closestEnemyLoc = VectorFunctions.findClosest(enemyLocs, rc.getLocation());
-		rc.attackSquare(closestEnemyLoc);
 	}
 
 	public void findEnemyPastures()
