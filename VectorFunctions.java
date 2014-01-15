@@ -25,6 +25,21 @@ public class VectorFunctions
 		return closestLoc;
 	}
 	
+	public static int findClosest(ArrayList<MapLocation> manyLocs, MapLocation point){
+		int closestDist = 10000000;
+		int challengerDist = closestDist;
+		int closestLoc = 0;
+		for(int i=0;i<manyLocs.size();i++){
+			MapLocation m = manyLocs.get(i);
+			challengerDist = point.distanceSquaredTo(m);
+			if(challengerDist<closestDist){
+				closestDist = challengerDist;
+				closestLoc = i;
+			}
+		}
+		return closestLoc;
+	}
+	
 	public static MapLocation mladd(MapLocation m1, MapLocation m2)
 	{
 		return new MapLocation(m1.x+m2.x, m1.y+m2.y);
@@ -68,6 +83,29 @@ public class VectorFunctions
 		return mladd(mlmultiply(bigBoxLoc,bigBoxSize),new MapLocation(bigBoxSize/2,bigBoxSize/2));
 	}
 	
+	public static MapLocation[] robotsToLocations(Robot[] robotList,RobotController rc, boolean ignoreHQ) throws GameActionException{
+		if(robotList.length==0)
+			return new MapLocation[]{};
+		ArrayList<MapLocation> robotLocs = new ArrayList<MapLocation>();
+		for(int i=0;i<robotList.length;i++){
+			Robot anEnemy = robotList[i];
+			RobotInfo anEnemyInfo = rc.senseRobotInfo(anEnemy);
+			if(!ignoreHQ||anEnemyInfo.type!=RobotType.HQ)
+				robotLocs.add(anEnemyInfo.location);
+		}
+		return robotLocs.toArray(new MapLocation[]{});
+	}
+	
+	public static MapLocation meanLocation(MapLocation[] manyLocs){
+		if(manyLocs.length==0)
+			return null;
+		MapLocation runningTotal = new MapLocation(0,0);
+		for(MapLocation m:manyLocs){
+			runningTotal = mladd(runningTotal,m);
+		}
+		return mldivide(runningTotal,manyLocs.length);
+	}
+	/*
 	public static MapLocation[] robotsToLocations(Robot[] robotList,RobotController rc) throws GameActionException{
 		MapLocation[] robotLocations = new MapLocation[robotList.length];
 		for(int i=0;i<robotList.length;i++){
@@ -76,5 +114,5 @@ public class VectorFunctions
 			robotLocations[i] = anEnemyInfo.location;
 		}
 		return robotLocations;
-	}
+	}*/
 }

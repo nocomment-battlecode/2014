@@ -16,6 +16,7 @@ public class Comms{
 			downloadedPath.add(VectorFunctions.intToLoc(locationInt));
 			locationInt = rc.readBroadcast(CowboyRobot.myBand+1+downloadedPath.size());
 		}
+		rc.setIndicatorString(0, "path length "+downloadedPath.size()+", written round "+Clock.getRoundNum());
 		CowboyRobot.myBand = -locationInt*100;
 		return downloadedPath;
 	}
@@ -26,14 +27,15 @@ public class Comms{
 		//the unit will not pathfind if the broadcast goal (for this band ID) is the same as the one currently on the message channel
 		int band = bandID*100;
 		MapLocation pathGoesTo = VectorFunctions.intToLoc(rc.readBroadcast(band+lengthOfEachPath[bandID]));
-		if(!pathGoesTo.equals(VectorFunctions.mldivide(goal,bigBoxSize))){
-			ArrayList<MapLocation> path = BreadthFirst.pathTo(VectorFunctions.mldivide(rc.getLocation(),bigBoxSize), VectorFunctions.mldivide(goal,bigBoxSize), 100000);
-			rc.broadcast(band, Clock.getRoundNum());
-			for(int i=path.size()-1;i>=0;i--){
-				rc.broadcast(band+i+1, VectorFunctions.locToInt(path.get(i)));
+		if(!pathGoesTo.equals(BreadthFirst.trimGoal(VectorFunctions.mldivide(goal,bigBoxSize)))){
+			//rc.setIndicatorString(0,"sending from "+start+" to "+goal+" on round "+Clock.getRoundNum());
+			ArrayList<MapLocation> foundPath = BreadthFirst.pathTo(VectorFunctions.mldivide(start,bigBoxSize), VectorFunctions.mldivide(goal,bigBoxSize), 100000);
+			for(int i=foundPath.size()-1;i>=0;i--){
+				rc.broadcast(band+i+1, VectorFunctions.locToInt(foundPath.get(i)));
 			}
-			lengthOfEachPath[bandID]= path.size();
+			lengthOfEachPath[bandID]= foundPath.size();
 			rc.broadcast(band+lengthOfEachPath[bandID]+1, -joinSquadNo);
+			rc.broadcast(band, Clock.getRoundNum());
 		}
 	}
 	
