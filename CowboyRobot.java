@@ -27,7 +27,7 @@ public class CowboyRobot extends BasicRobot
 		BreadthFirst.rc=rcIn;//slimmed down init
 		//MapLocation goal = getRandomLocation();
 		//path = BreadthFirst.pathTo(VectorFunctions.mldivide(rc.getLocation(),bigBoxSize), VectorFunctions.mldivide(goal,bigBoxSize), 100000);
-		//VectorFunctions.printPath(path,bigBoxSize);
+		//VectorFunctions.printPath(path);
 		while(true){
 			try{
 				if (rc.isActive())
@@ -56,20 +56,21 @@ public class CowboyRobot extends BasicRobot
 			rc.yield();
 		}
 	}
-
+	
 	private static void runSoldier() throws GameActionException {
 		//follow orders from HQ
 		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,10000,rc.getTeam().opponent());
 		Robot[] alliedRobots = rc.senseNearbyGameObjects(Robot.class,rc.getType().sensorRadiusSquared*2,rc.getTeam());//was 
 		if(enemyRobots.length>0){//SHOOT AT, OR RUN TOWARDS, ENEMIES
-			MapLocation[] enemyRobotLocations = VectorFunctions.robotsToLocations(enemyRobots, rc, true);
+			MapLocation[] enemyRobotLocations = VectorFunctions.robotsToLocations(enemyRobots, true);
 			if(enemyRobotLocations.length==0){//only HQ is in view
 				navigateByPath(alliedRobots);
 			}else{//shootable robots are in view
 				MapLocation closestEnemyLoc = VectorFunctions.findClosest(enemyRobotLocations, rc.getLocation());
 				boolean closeEnoughToShoot = closestEnemyLoc.distanceSquaredTo(rc.getLocation())<=rc.getType().attackRadiusMaxSquared;
 				if((alliedRobots.length+1)>=enemyRobots.length){//attack when you have superior numbers
-					attackClosest(closestEnemyLoc);
+//					attackClosest(closestEnemyLoc);
+					attackLowest(closestEnemyLoc);
 				}else{//otherwise regroup
 					regroup(enemyRobots,alliedRobots,closestEnemyLoc);
 				}
@@ -99,7 +100,7 @@ public class CowboyRobot extends BasicRobot
 			//follow breadthFirst path...
 			Direction bdir = BreadthFirst.getNextDirection(path, DataCache.bigBoxSize);
 			//...except if you are getting too far from your allies
-			MapLocation[] alliedRobotLocations = VectorFunctions.robotsToLocations(alliedRobots, rc, true);
+			MapLocation[] alliedRobotLocations = VectorFunctions.robotsToLocations(alliedRobots, true);
 			if(alliedRobotLocations.length>0){
 				MapLocation allyCenter = VectorFunctions.meanLocation(alliedRobotLocations);
 				if(rc.getLocation().distanceSquaredTo(allyCenter)>16){
@@ -155,14 +156,14 @@ public class CowboyRobot extends BasicRobot
 			Direction awayFromEnemy = rc.getLocation().directionTo(closestEnemyLoc).opposite();
 			BasicPathing.tryToMove(awayFromEnemy, true,true,false);
 		}else{//if outside attack range, group up with allied robots
-			MapLocation[] alliedRobotLocations = VectorFunctions.robotsToLocations(enemyRobots, rc,false);
+			MapLocation[] alliedRobotLocations = VectorFunctions.robotsToLocations(enemyRobots, false);
 			MapLocation alliedRobotCenter = VectorFunctions.meanLocation(alliedRobotLocations);
 			Direction towardAllies = rc.getLocation().directionTo(alliedRobotCenter);
 			BasicPathing.tryToMove(towardAllies, true,true, false);
 		}
 	}
 
-	private static void attackClosest(MapLocation closestEnemyLoc) throws GameActionException {
+/*	private static void attackClosest(MapLocation closestEnemyLoc) throws GameActionException {
 		//attacks the closest enemy or moves toward it, if it is out of range
 		if(closestEnemyLoc.distanceSquaredTo(rc.getLocation())<=rc.getType().attackRadiusMaxSquared){//close enough to shoot
 			if(rc.isActive()){
@@ -173,6 +174,34 @@ public class CowboyRobot extends BasicRobot
 			//simpleMove(towardClosest);
 			BasicPathing.tryToMove(towardClosest, true,true, false);
 		}
+	}*/
+	
+	public static void attackLowest(MapLocation closestEnemyLoc) throws GameActionException	{
+		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class, rc.getType().attackRadiusMaxSquared, rc.getTeam().opponent());
+		if (enemyRobots.length != 0){
+			double lowestHealth = 1000;
+			Robot lowestRobot = null;
+			for (int i = 0; i < enemyRobots.length; i++)
+			{
+				double robotHealth = rc.senseRobotInfo(enemyRobots[i]).health;
+				if (robotHealth < lowestHealth){
+					lowestHealth = robotHealth;
+					lowestRobot = enemyRobots[i];
+				}
+			}
+			if(rc.isActive() && lowestRobot != null){
+				rc.attackSquare(rc.senseRobotInfo(lowestRobot).location);
+			}
+		}else{//not close enough to shoot, so try to go shoot
+			Direction towardClosest = rc.getLocation().directionTo(closestEnemyLoc);
+			//simpleMove(towardClosest);
+			BasicPathing.tryToMove(towardClosest, true,true, false);
+		}
+	}
+	
+	// shoots at cows in enemy pastures first
+	public static void attackCows(){
+		
 	}
 
 	private static MapLocation getRandomLocation() {
@@ -195,4 +224,10 @@ public class CowboyRobot extends BasicRobot
 			}
 		}
 	}
+	
+	/*public static void bug(MapLocation desiredLoc){
+		Direction desiredDir = DataCache.selfLoc.directionTo(desiredLoc);
+		if (BasicPathing.canMove(DataCache.selfLoc.directionTo(desiredLoc))) rc.move(desiredDir);
+		
+	}*/
 }

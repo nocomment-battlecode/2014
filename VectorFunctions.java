@@ -6,17 +6,13 @@ import battlecode.common.*;
 
 public class VectorFunctions
 {
-	public static MapLocation findClosest(MapLocation[] locList, MapLocation currentLoc)
-	{
+	public static MapLocation findClosest(MapLocation[] locList, MapLocation currentLoc){
 		int closestDist = 10000000;
 		MapLocation closestLoc = null;
-		for(MapLocation tryLoc: locList)
-		{
-			if (tryLoc.x != DataCache.enemyHQLoc.x || tryLoc.y != DataCache.enemyHQLoc.y)
-			{
+		for(MapLocation tryLoc: locList){
+			if (tryLoc.x != DataCache.enemyHQLoc.x || tryLoc.y != DataCache.enemyHQLoc.y){
 				int tryDist = currentLoc.distanceSquaredTo(tryLoc);
-				if (tryDist < closestDist)
-				{
+				if (tryDist < closestDist){
 					closestDist = tryDist;
 					closestLoc = tryLoc;
 				}
@@ -29,7 +25,7 @@ public class VectorFunctions
 		int closestDist = 10000000;
 		int challengerDist = closestDist;
 		int closestLoc = 0;
-		for(int i=0;i<manyLocs.size();i++){
+		for(int i=manyLocs.size();--i>=0;){
 			MapLocation m = manyLocs.get(i);
 			challengerDist = point.distanceSquaredTo(m);
 			if(challengerDist<closestDist){
@@ -62,12 +58,12 @@ public class VectorFunctions
 	
 	public static int locToInt(MapLocation m)
 	{
-		return (m.x*100 + m.y);
+		return (m.x*DataCache.mapBase + m.y);
 	}
 	
 	public static MapLocation intToLoc(int i)
 	{
-		return new MapLocation(i/100,i%100);
+		return new MapLocation(i/DataCache.mapBase,i%DataCache.mapBase);
 	}
 	
 	public static void printPath(ArrayList<MapLocation> path, int bigBoxSize)
@@ -83,17 +79,27 @@ public class VectorFunctions
 		return mladd(mlmultiply(bigBoxLoc,bigBoxSize),new MapLocation(bigBoxSize/2,bigBoxSize/2));
 	}
 	
-	public static MapLocation[] robotsToLocations(Robot[] robotList,RobotController rc, boolean ignoreHQ) throws GameActionException{
+	public static MapLocation[] robotsToLocations(Robot[] robotList, boolean ignoreHQ) throws GameActionException{
+		boolean hasHQ = false;
 		if(robotList.length==0)
 			return new MapLocation[]{};
-		ArrayList<MapLocation> robotLocs = new ArrayList<MapLocation>();
-		for(int i=0;i<robotList.length;i++){
+		RobotInfo[] enemyInfos = new RobotInfo[robotList.length];
+		for(int i=robotList.length;--i>=0;){
 			Robot anEnemy = robotList[i];
-			RobotInfo anEnemyInfo = rc.senseRobotInfo(anEnemy);
-			if(!ignoreHQ||anEnemyInfo.type!=RobotType.HQ)
-				robotLocs.add(anEnemyInfo.location);
+			enemyInfos[i] = DataCache.rc.senseRobotInfo(anEnemy);
+			if(enemyInfos[i].type==RobotType.HQ && ignoreHQ)
+				hasHQ = true;
 		}
-		return robotLocs.toArray(new MapLocation[]{});
+		int robotLocsLength = hasHQ?(robotList.length-1):robotList.length;
+		MapLocation[] robotLocs = new MapLocation[robotLocsLength];
+		int i = 0;
+		for(int j=robotList.length;--j>=0;){
+			if(enemyInfos[j].type!=RobotType.HQ || !ignoreHQ){
+				robotLocs[i] = enemyInfos[j].location;
+				i++;
+			}
+		}
+		return robotLocs;
 	}
 	
 	public static MapLocation meanLocation(MapLocation[] manyLocs){

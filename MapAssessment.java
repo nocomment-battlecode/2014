@@ -5,22 +5,18 @@ import battlecode.common.*;
 public class MapAssessment{
 	
 	public static int[][] coarseMap;
-	public static int bigBoxSize;
 	
-	public static void assessMap(int bigBoxSizeIn,RobotController rc){
-		bigBoxSize=bigBoxSizeIn;
-		int coarseWidth = rc.getMapWidth()/bigBoxSize;
-		int coarseHeight = rc.getMapHeight()/bigBoxSize;
-		coarseMap = new int[coarseWidth][coarseHeight];
-		for(int x=0;x<coarseWidth*bigBoxSize;x++){
-			for(int y=0;y<coarseHeight*bigBoxSize;y++){
-				coarseMap[x/bigBoxSize][y/bigBoxSize]+=countObstacles(x,y,rc);
+	public static void assessMap(){
+		coarseMap = new int[DataCache.coarseWidth][DataCache.coarseHeight];
+		for(int x=DataCache.coarseWidth*DataCache.bigBoxSize;--x>=0;){
+			for(int y=DataCache.coarseHeight*DataCache.bigBoxSize;--y>=0;){
+				coarseMap[x/DataCache.bigBoxSize][y/DataCache.bigBoxSize]+=countObstacles(x,y);
 			}
 		}
 	}
 
-	public static int countObstacles(int x, int y,RobotController rc){//returns a 0 or a 1
-		int terrainOrdinal = rc.senseTerrainTile(new MapLocation(x,y)).ordinal();//0 NORMAL, 1 ROAD, 2 VOID, 3 OFF_MAP
+	public static int countObstacles(int x, int y){//returns a 0 or a 1
+		int terrainOrdinal = DataCache.rc.senseTerrainTile(new MapLocation(x,y)).ordinal();//0 NORMAL, 1 ROAD, 2 VOID, 3 OFF_MAP
 		return (terrainOrdinal<2?0:1);
 	}
 	
@@ -36,10 +32,10 @@ public class MapAssessment{
 	}
 	public static void printBigCoarseMap(RobotController rc){
 		System.out.println("Fine map:");
-		for(int x=0;x<coarseMap[0].length*bigBoxSize;x++){
-			for(int y=0;y<coarseMap.length*bigBoxSize;y++){
-				if(countObstacles(x,y,rc)==0){//there's no obstacle, so print the box's obstacle count
-					int numberOfObstacles = coarseMap[x/bigBoxSize][y/bigBoxSize];
+		for(int x=0;x<coarseMap[0].length*DataCache.bigBoxSize;x++){
+			for(int y=0;y<coarseMap.length*DataCache.bigBoxSize;y++){
+				if(countObstacles(x,y)==0){//there's no obstacle, so print the box's obstacle count
+					int numberOfObstacles = coarseMap[x/DataCache.bigBoxSize][y/DataCache.bigBoxSize];
 					System.out.print(Math.min(numberOfObstacles, 9));
 				}else{//there's an obstacle, so print an X
 					System.out.print("X");

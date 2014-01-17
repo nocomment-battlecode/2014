@@ -9,8 +9,6 @@ public class BreadthFirst {
 	public static RobotController rc;
 	public static MapLocation enemy;
 	public static MapLocation myLoc;
-	public static int height;
-	public static int width;
 	public static Direction[][] pathingData;
 	public static int[][] distanceData;//integer comparisons are apparently cheaper (2 vs 4 b)
 	public static int[][] mapData;
@@ -23,18 +21,15 @@ public class BreadthFirst {
 	
 	//pathTo(myLoc,enemy,1000000);
 	
-	public static void init(RobotController rci,int bigBoxSize){
+	public static void init(RobotController rci){
 		rc = rci;
-		width = rc.getMapWidth()/bigBoxSize;
-		height = rc.getMapHeight()/bigBoxSize;
-		MapAssessment.assessMap(bigBoxSize, rci);
+		MapAssessment.assessMap();
 		//MapAssessment.printCoarseMap();
 		//MapAssessment.printBigCoarseMap(rci);
 		updateInternalMap(rc);
-		
 	}
 	
-	private static int getMapData(int x, int y){
+	public static int getMapData(int x, int y){
 		return mapData[x+1][y+1];
 	}
 	
@@ -42,16 +37,16 @@ public class BreadthFirst {
 		return getMapData(m.x,m.y);
 	}
 	
-	private static void setMapData(int x, int y, int val){
+	public static void setMapData(int x, int y, int val){
 		mapData[x+1][y+1] = val;
 	}
 	
-	private static void updateInternalMap(RobotController rc){//can take several rounds, but ultimately saves time
-		mapData = new int[width+2][height+2];
-		for(int x=0;x<width;x++){
-			for(int y=0;y<height;y++){
+	public static void updateInternalMap(RobotController rc){//can take several rounds, but ultimately saves time
+		mapData = new int[DataCache.coarseWidth+2][DataCache.coarseHeight+2];
+		for(int x=0;x<DataCache.coarseWidth;x++){
+			for(int y=0;y<DataCache.coarseHeight;y++){
 				int val = MapAssessment.coarseMap[x][y];
-				if(val==MapAssessment.bigBoxSize*MapAssessment.bigBoxSize){//completely filled with voids
+				if(val==DataCache.bigBoxSize*DataCache.bigBoxSize){//completely filled with voids
 					val=0;//if it's zero, consider it non-traversible
 				}else{
 					val+=10000;//if it's >= 10000, consider it on-map
@@ -71,8 +66,8 @@ public class BreadthFirst {
 		}else{
 			//clear path info for next computation
 			shortestPathLocated = false;
-			pathingData = new Direction[width][height];//direction to arrive at this tile fastest
-			distanceData = new int[width][height];//closest distance to this tile
+			pathingData = new Direction[DataCache.coarseWidth][DataCache.coarseHeight];//direction to arrive at this tile fastest
+			distanceData = new int[DataCache.coarseWidth][DataCache.coarseHeight];//closest distance to this tile
 			ArrayList<MapLocation> outermost = new ArrayList<MapLocation>();
 			outermost.add(start);
 			distanceData[start.x][start.y] = -maxSearchDist*10;//the 10 allows a multiple of 14 for diagonals
@@ -96,7 +91,7 @@ public class BreadthFirst {
 	
 	public static MapLocation trimGoal(MapLocation uncheckedGoal){
 		//make sure the goal is inside bounds
-		return new MapLocation(Math.min(uncheckedGoal.x, width-1),Math.min(uncheckedGoal.y, height-1));
+		return new MapLocation(Math.min(uncheckedGoal.x, DataCache.coarseWidth-1),Math.min(uncheckedGoal.y, DataCache.coarseHeight-1));
 	}
 	
 	private static ArrayList<MapLocation> getNewOutermost(ArrayList<MapLocation> outermost,MapLocation start,MapLocation goal){

@@ -23,7 +23,7 @@ public class HQRobot extends BasicRobot
 			rc.broadcast(101,VectorFunctions.locToInt(VectorFunctions.mldivide(rc.senseHQLocation(),DataCache.bigBoxSize)));//this tells soldiers to stay near HQ to start
 			rc.broadcast(102,-1);//and to remain in squad 1
 			tryToSpawn(DataCache.enemyHQDir);
-			BreadthFirst.init(rc, DataCache.bigBoxSize);
+			BreadthFirst.init(rc);
 			DataCache.rallyPoint = VectorFunctions.mladd(VectorFunctions.mldivide(VectorFunctions.mlsubtract(rc.senseEnemyHQLocation(),rc.senseHQLocation()),3),rc.senseHQLocation());
 			while(true){
 				try{
@@ -84,7 +84,7 @@ public class HQRobot extends BasicRobot
 		//consider attacking
 		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,10000,rc.getTeam().opponent());
 		if(rc.isActive()&&enemyRobots.length>0){
-			MapLocation[] enemyRobotLocations = VectorFunctions.robotsToLocations(enemyRobots, rc, true);
+			MapLocation[] enemyRobotLocations = VectorFunctions.robotsToLocations(enemyRobots, true);
 			MapLocation closestEnemyLoc = VectorFunctions.findClosest(enemyRobotLocations, rc.getLocation());
 			if(rc.canAttackSquare(closestEnemyLoc))
 				rc.attackSquare(closestEnemyLoc);
@@ -96,7 +96,7 @@ public class HQRobot extends BasicRobot
 	
 	private MapLocation findAverageAllyLocation(Robot[] alliedRobots) throws GameActionException {
 		//find average soldier location
-		MapLocation[] alliedRobotLocations = VectorFunctions.robotsToLocations(alliedRobots, rc, true);
+		MapLocation[] alliedRobotLocations = VectorFunctions.robotsToLocations(alliedRobots, true);
 		MapLocation startPoint;
 		if(alliedRobotLocations.length>0){
 			startPoint = VectorFunctions.meanLocation(alliedRobotLocations);
@@ -145,7 +145,7 @@ public class HQRobot extends BasicRobot
 	{
 		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,rc.getType().attackRadiusMaxSquared,rc.getTeam().opponent());
 		if(enemyRobots.length>0){//SHOOT AT, OR RUN TOWARDS, ENEMIES
-			MapLocation[] robotLocations = VectorFunctions.robotsToLocations(enemyRobots, rc, true);
+			MapLocation[] robotLocations = VectorFunctions.robotsToLocations(enemyRobots, true);
 			MapLocation closestEnemyLoc = VectorFunctions.findClosest(robotLocations, rc.getLocation());
 			if (closestEnemyLoc != null)
 			{

@@ -10,5 +10,5 @@ public abstract class BasicRobot
 		rc = myRC;
 		DataCache.initialize(this);
 	}
-	abstract public void run(RobotController myRC);
+	public abstract void run(RobotController myRC);
 }
