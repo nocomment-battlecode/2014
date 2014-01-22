@@ -22,21 +22,15 @@ public class DataCache
 	public static MapLocation targetedPastr;
 	public static MapLocation selfLoc;
 	public static Direction enemyHQDir;
-	public static int HQShootRangeSq = 15;
+	public static double lastHealth;
+	public static double selfHealth;
+	public static boolean beingShotAt = false;
 	public static int bigBoxSize = 7;
 	public static int trailLength = 2;
 	public static boolean makePastures = false;
 	public static MapLocation[] enemyPastureLocs;
 	public static RobotInfo[] allyInfo;
 	public static Robot[] allyRobots;
-/*	public static boolean isBugging = false;
-	public static boolean goneAround = false;
-	public static boolean hugLeft = false;
-	public static MapLocation startBuggingLoc;
-	public static Direction startDir;
-	public static int buggingDistance;
-	public static MapLocation desiredLoc;
-	public static int[] myProhibitedDirs = {-1,-1};*/
 	
 	public static void initialize(BasicRobot myRobot)
 	{
@@ -48,11 +42,16 @@ public class DataCache
 		enemyHQDir = HQLoc.directionTo(enemyHQLoc);
 		coarseWidth = rc.getMapWidth()/bigBoxSize;
 		coarseHeight = rc.getMapHeight()/bigBoxSize;
+		selfHealth = rc.getHealth();
 	}
 	public static void updateVariables() throws GameActionException
 	{
 		selfLoc = rc.getLocation();
 		allyRobots = rc.senseNearbyGameObjects(Robot.class, 10000, rc.getTeam());
+		lastHealth = selfHealth;
+		selfHealth = rc.getHealth();
+		if (selfHealth<lastHealth) beingShotAt = true;
+		else beingShotAt = false;
 		allyInfo = new RobotInfo[allyRobots.length];
 		for (int i = 0; i < allyRobots.length; i++)
 		{

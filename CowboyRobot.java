@@ -45,22 +45,7 @@ public class CowboyRobot extends BasicRobot
 				if (rc.isActive())
 				{
 					runSoldier();
-					/*DataCache.updateVariables();
-					if (DataCache.makePastures && DataCache.numPastures < 1)//rc.sensePastrLocations(rc.getTeam()).length < 1
-					{
-						DataCache.numPastures++;
-						rc.construct(RobotType.PASTR);
-						rc.setIndicatorString(0, ""+DataCache.numPastures);
-					}
-					else if (DataCache.makePastures && DataCache.numTowers < 1)
-					{
-						DataCache.numTowers++;
-						rc.construct(RobotType.NOISETOWER);
-					}
-					else
-					{
-						runSoldier();
-					}*/
+					DataCache.updateVariables();
 				}
 			}catch (Exception e){
 				e.printStackTrace();
@@ -80,7 +65,8 @@ public class CowboyRobot extends BasicRobot
 			}else{//shootable robots are in view
 				MapLocation closestEnemyLoc = VectorFunctions.findClosest(enemyRobotLocations, rc.getLocation());
 				boolean closeEnoughToShoot = closestEnemyLoc.distanceSquaredTo(rc.getLocation())<=rc.getType().attackRadiusMaxSquared;
-				if((alliedRobots.length+1)>=enemyRobots.length){//attack when you have superior numbers
+				if (DataCache.beingShotAt) BasicPathing.tryToMove(DataCache.selfLoc.directionTo(closestEnemyLoc).opposite(),false,true,false);
+				else if((alliedRobots.length+1)>=enemyRobots.length){//attack when you have superior numbers
 					//					attackClosest(closestEnemyLoc);
 					attackLowest(closestEnemyLoc);
 				}else{//otherwise regroup
@@ -93,8 +79,12 @@ public class CowboyRobot extends BasicRobot
 			Direction nextDir = getNextDirectionBug();
 			if (nextDir != null) rc.move(nextDir);
 		}
-		else{//NAVIGATION BY DOWNLOADED PATH
-			navigateByPath(alliedRobots);
+		else if (DataCache.rallyPoint != null){
+			desiredLoc = DataCache.rallyPoint;
+			Direction nextDir = getNextDirectionBug();
+			if (nextDir != null) rc.move(nextDir);
+			//NAVIGATION BY DOWNLOADED PATH
+			//navigateByPath(alliedRobots);
 			//Direction towardEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 			//BasicPathing.tryToMove(towardEnemy, true, rc, directionalLooks, allDirections);//was Direction.SOUTH_EAST
 

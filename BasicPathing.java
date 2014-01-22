@@ -11,7 +11,15 @@ public class BasicPathing{
 	static int currentIndex = 0;
 	static boolean filledTrail = false;
 	
+	//makes sure that we don't have null pointer exceptions when we try to access the trail
+	public static void initialize() {
+		for (int i=DataCache.trailLength;--i>=0;){
+			snailTrail[i]=DataCache.selfLoc;
+		}
+	}
+	
 	public static boolean canMove(Direction dir, boolean selfAvoiding, boolean avoidEnemyHQ){
+		if (snailTrail[0] == null) initialize();
 		//include both rc.canMove and the snail Trail requirements
 		MapLocation resultingLocation = DataCache.selfLoc.add(dir);
 		if(selfAvoiding){
