@@ -15,6 +15,14 @@ public class CowboyRobot extends BasicRobot
 	//SOLDIER data:
 	static int myBand = 100;
 	static int pathCreatedRound = -1;
+	static boolean isBugging = false;
+	static boolean goneAround = false;
+	static boolean hugLeft = false;
+	static MapLocation startBuggingLoc;
+	static Direction startDir;
+	static int buggingDistance;
+	static MapLocation desiredLoc;
+	static int[] myProhibitedDirs = new int[]{-1,-1};
 	public CowboyRobot(RobotController myRC) throws GameActionException
 	{
 		super(myRC);
@@ -28,11 +36,16 @@ public class CowboyRobot extends BasicRobot
 		//MapLocation goal = getRandomLocation();
 		//path = BreadthFirst.pathTo(VectorFunctions.mldivide(rc.getLocation(),bigBoxSize), VectorFunctions.mldivide(goal,bigBoxSize), 100000);
 		//VectorFunctions.printPath(path);
+		/*isBugging = false;
+		goneAround = false;
+		hugLeft = false;
+		int[] myProhibitedDirs = {-1,-1};*/
 		while(true){
 			try{
 				if (rc.isActive())
 				{
-					DataCache.updateVariables();
+					runSoldier();
+					/*DataCache.updateVariables();
 					if (DataCache.makePastures && DataCache.numPastures < 1)//rc.sensePastrLocations(rc.getTeam()).length < 1
 					{
 						DataCache.numPastures++;
@@ -47,16 +60,15 @@ public class CowboyRobot extends BasicRobot
 					else
 					{
 						runSoldier();
-					}
+					}*/
 				}
 			}catch (Exception e){
-				rc.setIndicatorString(0, "dumb error 1");
 				e.printStackTrace();
 			}
 			rc.yield();
 		}
 	}
-	
+
 	private static void runSoldier() throws GameActionException {
 		//follow orders from HQ
 		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,10000,rc.getTeam().opponent());
@@ -69,13 +81,19 @@ public class CowboyRobot extends BasicRobot
 				MapLocation closestEnemyLoc = VectorFunctions.findClosest(enemyRobotLocations, rc.getLocation());
 				boolean closeEnoughToShoot = closestEnemyLoc.distanceSquaredTo(rc.getLocation())<=rc.getType().attackRadiusMaxSquared;
 				if((alliedRobots.length+1)>=enemyRobots.length){//attack when you have superior numbers
-//					attackClosest(closestEnemyLoc);
+					//					attackClosest(closestEnemyLoc);
 					attackLowest(closestEnemyLoc);
 				}else{//otherwise regroup
 					regroup(enemyRobots,alliedRobots,closestEnemyLoc);
 				}
 			}
-		}else{//NAVIGATION BY DOWNLOADED PATH
+		}
+		else if(Clock.getRoundNum() > 0){
+			desiredLoc = DataCache.enemyHQLoc;
+			Direction nextDir = getNextDirectionBug();
+			if (nextDir != null) rc.move(nextDir);
+		}
+		else{//NAVIGATION BY DOWNLOADED PATH
 			navigateByPath(alliedRobots);
 			//Direction towardEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 			//BasicPathing.tryToMove(towardEnemy, true, rc, directionalLooks, allDirections);//was Direction.SOUTH_EAST
@@ -112,7 +130,7 @@ public class CowboyRobot extends BasicRobot
 	}
 
 	private static void considerBuildingPastr(Robot[] alliedRobots) throws GameActionException {
-		if(alliedRobots.length>4){//there must be allies nearby for defense
+		if(alliedRobots.length>3){//there must be allies nearby for defense
 			MapLocation[] alliedPastrs =rc.sensePastrLocations(rc.getTeam());
 			if(alliedPastrs.length<5&&(rc.readBroadcast(50)+60<Clock.getRoundNum())){//no allied robot can be building a pastr at the same time
 				for(int i=0;i<20;i++){
@@ -163,7 +181,7 @@ public class CowboyRobot extends BasicRobot
 		}
 	}
 
-/*	private static void attackClosest(MapLocation closestEnemyLoc) throws GameActionException {
+	/*	private static void attackClosest(MapLocation closestEnemyLoc) throws GameActionException {
 		//attacks the closest enemy or moves toward it, if it is out of range
 		if(closestEnemyLoc.distanceSquaredTo(rc.getLocation())<=rc.getType().attackRadiusMaxSquared){//close enough to shoot
 			if(rc.isActive()){
@@ -175,7 +193,7 @@ public class CowboyRobot extends BasicRobot
 			BasicPathing.tryToMove(towardClosest, true,true, false);
 		}
 	}*/
-	
+
 	public static void attackLowest(MapLocation closestEnemyLoc) throws GameActionException	{
 		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class, rc.getType().attackRadiusMaxSquared, rc.getTeam().opponent());
 		if (enemyRobots.length != 0){
@@ -195,13 +213,13 @@ public class CowboyRobot extends BasicRobot
 		}else{//not close enough to shoot, so try to go shoot
 			Direction towardClosest = rc.getLocation().directionTo(closestEnemyLoc);
 			//simpleMove(towardClosest);
-			BasicPathing.tryToMove(towardClosest, true,true, false);
+			BasicPathing.tryToMove(towardClosest, true, true, false);
 		}
 	}
-	
+
 	// shoots at cows in enemy pastures first
 	public static void attackCows(){
-		
+
 	}
 
 	private static MapLocation getRandomLocation() {
@@ -225,9 +243,105 @@ public class CowboyRobot extends BasicRobot
 		}
 	}
 	
-	/*public static void bug(MapLocation desiredLoc){
+	public static Direction getNextDirectionBug(){
 		Direction desiredDir = DataCache.selfLoc.directionTo(desiredLoc);
-		if (BasicPathing.canMove(DataCache.selfLoc.directionTo(desiredLoc))) rc.move(desiredDir);
-		
-	}*/
+		if (isBugging){
+			if (BasicPathing.canMove(DataCache.selfLoc.directionTo(desiredLoc),true,true) && DataCache.selfLoc.distanceSquaredTo(desiredLoc) <= buggingDistance){
+				isBugging = false;
+			}
+		}
+		if (!isBugging){
+			Direction newDir = flockInDir(desiredDir);
+			if (newDir != null){
+				return newDir;
+			}
+			isBugging = true;
+			startBuggingLoc = DataCache.selfLoc;
+			startDir = desiredDir;
+			buggingDistance = DataCache.selfLoc.distanceSquaredTo(desiredLoc);
+		}
+		if(isBugging){
+			if (goneAround && (desiredDir == startDir.rotateLeft().rotateLeft() || desiredDir == startDir.rotateRight().rotateRight())) {
+				myProhibitedDirs[0] = -1;
+			}
+			if (desiredDir == startDir.opposite()) {
+				myProhibitedDirs[0] = -1;
+				goneAround = true;
+			}
+			Direction moveDir = hug(desiredDir, false);
+			if (moveDir == null) {
+				moveDir = desiredDir;
+			}
+			return moveDir;
+		}
+		return null;
+		//if (BasicPathing.canMove(DataCache.selfLoc.directionTo(desiredLoc))) rc.move(desiredDir);
+	}
+
+	private static Direction turn(Direction dir){
+		return (hugLeft ? dir.rotateRight() : dir.rotateLeft());
+	}
+
+	private static Direction hug (Direction desiredDir, boolean recursed){
+		if (BasicPathing.canMove(desiredDir,true,true)){
+			return desiredDir;
+		}
+		Direction tryDir = turn(desiredDir);
+		MapLocation tryLoc = DataCache.selfLoc.add(tryDir);
+		for (int i=0; i<8 && !rc.canMove(tryDir); i++){
+		//for (int i=0; i<8 && !BasicPathing.canMove(tryDir,true,true); i++){
+			tryDir = turn(tryDir);
+			tryLoc = DataCache.selfLoc.add(tryDir);
+		}
+		// If the loop failed (found no directions or encountered the map edge)
+		if (!rc.canMove(tryDir)) {
+		//if (!BasicPathing.canMove(tryDir,true,true)) {
+			hugLeft = !hugLeft;
+			if (recursed){
+				// We've tried hugging in both directions...
+				if (myProhibitedDirs[0] != -1 && myProhibitedDirs[1] != -1) {
+					// We were prohibiting certain directions before.
+					// try again allowing those directions
+					myProhibitedDirs[1] = -1;
+					return hug(desiredDir, false);
+				}
+				else {
+					// Complete failure. Reset the state and start over.
+					//reset();
+					return null;
+				}
+			}
+			// mark recursed as true and try hugging the other direction
+			return hug(desiredDir, true);
+		}
+		// If we're moving in a new cardinal direction, store it.
+		if (!tryDir.isDiagonal()) {
+			if (myProhibitedDirs[0] != -1 && turn(turn(DataCache.dirValues[myProhibitedDirs[0]])) == tryDir) {
+				myProhibitedDirs[0] = tryDir.opposite().ordinal();
+				myProhibitedDirs[1] = -1;
+			} else {
+				myProhibitedDirs[1] = myProhibitedDirs[0];
+				myProhibitedDirs[0] = tryDir.opposite().ordinal();
+			}
+		}
+		rc.setIndicatorString(0,tryDir.toString());
+		return tryDir;
+	}
+
+	private static Direction flockInDir(Direction desiredDir){
+		Direction[] directions = new Direction[3];
+		directions[0] = desiredDir;
+		Direction left = desiredDir.rotateLeft();
+		Direction right = desiredDir.rotateRight();
+		boolean leftIsBetter = (DataCache.selfLoc.add(left).distanceSquaredTo(desiredLoc) < DataCache.selfLoc.add(right).distanceSquaredTo(desiredLoc));
+		directions[1] = (leftIsBetter ? left : right);
+		directions[2] = (leftIsBetter ? right : left);
+		for (int i = 0; i < directions.length; i++){
+//			if (BasicPathing.canMove(directions[i],true,true)){
+			if (rc.canMove(directions[i])){
+				return directions[i];
+			}
+		}
+		return null;
+	}
 }

@@ -24,38 +24,22 @@ public class HQRobot extends BasicRobot
 			rc.broadcast(102,-1);//and to remain in squad 1
 			tryToSpawn(DataCache.enemyHQDir);
 			BreadthFirst.init(rc);
+			//find better rally point
 			DataCache.rallyPoint = VectorFunctions.mladd(VectorFunctions.mldivide(VectorFunctions.mlsubtract(rc.senseEnemyHQLocation(),rc.senseHQLocation()),3),rc.senseHQLocation());
 			while(true){
 				try{
 					runHQ();
 				}catch (Exception e){
-					rc.setIndicatorString(0, "dumb error 1");
 					//e.printStackTrace();
 				}
 				rc.yield();
-			}			
-
-			/*// update enemy pasture locations
-			DataCache.enemyPastureLocs = rc.sensePastrLocations(rc.getTeam().opponent());
-			DataCache.numPastures = rc.sensePastrLocations(rc.getTeam()).length;
-			tryToSpawn(DataCache.enemyHQDir); // spawn robots when possible
-			// attack enemy robots when they are in range
-			Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class, DataCache.HQShootRangeSq, rc.getTeam().opponent());
-			if (enemyRobots.length > 0)
-			{
-				attack();
-			}*/
-			/*			MapLocation[] enemyPastures = rc.sensePastrLocations(rc.getTeam().opponent());
-			if (enemyPastures.length != 0)
-			{
-				rc.setIndicatorString(0, "x: " + enemyPastures[0].x + "y: " + enemyPastures[0].y);
-			}*/
+			}
 			// sense broadcasting robots and direct robots to go there
 			//Robot[] enemyBroadcastingRobots = rc.senseBroadcastingRobots(rc.getTeam().opponent());
 		}
 		catch (Exception e)
 		{
-			rc.setIndicatorString(0, "dumb error 2");
+			//e.printStackTrace();
 		}
 		rc.yield();
 	}
@@ -63,8 +47,8 @@ public class HQRobot extends BasicRobot
 	private void runHQ() throws GameActionException
 	{
 		DataCache.updateVariables();
-		//TODO consider updating the rally point to an allied pastr 
-		Robot[] alliedRobots = rc.senseNearbyGameObjects(Robot.class,100000000,rc.getTeam());
+		//TODO consider updating the rally point to an allied pastr
+		Robot[] alliedRobots = rc.senseNearbyGameObjects(Robot.class,100000,rc.getTeam());
 		if(Clock.getRoundNum()>400 && alliedRobots.length<5){//call a retreat
 			MapLocation startPoint = findAverageAllyLocation(alliedRobots);
 			Comms.findPathAndBroadcast(2,startPoint,rc.senseHQLocation(),DataCache.bigBoxSize,2);
@@ -82,13 +66,7 @@ public class HQRobot extends BasicRobot
 			}
 		}
 		//consider attacking
-		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,10000,rc.getTeam().opponent());
-		if(rc.isActive()&&enemyRobots.length>0){
-			MapLocation[] enemyRobotLocations = VectorFunctions.robotsToLocations(enemyRobots, true);
-			MapLocation closestEnemyLoc = VectorFunctions.findClosest(enemyRobotLocations, rc.getLocation());
-			if(rc.canAttackSquare(closestEnemyLoc))
-				rc.attackSquare(closestEnemyLoc);
-		}
+		attackLowest();
 
 		//after telling them where to go, consider spawning
 		tryToSpawn(DataCache.enemyHQDir);
@@ -139,24 +117,24 @@ public class HQRobot extends BasicRobot
 			}
 		}
 	}
-
-	// attack the closest enemy robot, will code in a better heuristic later (most net damage = damage to enemy - damage to self)
-	public void attack() throws GameActionException
-	{
-		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,rc.getType().attackRadiusMaxSquared,rc.getTeam().opponent());
-		if(enemyRobots.length>0){//SHOOT AT, OR RUN TOWARDS, ENEMIES
-			MapLocation[] robotLocations = VectorFunctions.robotsToLocations(enemyRobots, true);
-			MapLocation closestEnemyLoc = VectorFunctions.findClosest(robotLocations, rc.getLocation());
-			if (closestEnemyLoc != null)
+	
+	//attack the lowest enemy robot, will code in a better heuristic later (most net damage = damage to enemy - damage to self)
+	public void attackLowest() throws GameActionException {
+		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class, rc.getType().attackRadiusMaxSquared, rc.getTeam().opponent());
+		if (enemyRobots.length != 0){
+			double lowestHealth = 1000;
+			Robot lowestRobot = null;
+			for (int i = 0; i < enemyRobots.length; i++)
 			{
-				rc.attackSquare(closestEnemyLoc);
+				double robotHealth = rc.senseRobotInfo(enemyRobots[i]).health;
+				if (robotHealth < lowestHealth){
+					lowestHealth = robotHealth;
+					lowestRobot = enemyRobots[i];
+				}
+			}
+			if(rc.isActive() && lowestRobot != null){
+				rc.attackSquare(rc.senseRobotInfo(lowestRobot).location);
 			}
 		}
-	}
-
-	public void findEnemyPastures()
-	{
-		// print out locations of enemy pastures to communication network
-		// have cowboyCode draw from this repository, this probably saves code
 	}
 }

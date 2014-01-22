@@ -23,12 +23,20 @@ public class DataCache
 	public static MapLocation selfLoc;
 	public static Direction enemyHQDir;
 	public static int HQShootRangeSq = 15;
-	public static int bigBoxSize = 4;
+	public static int bigBoxSize = 7;
 	public static int trailLength = 2;
 	public static boolean makePastures = false;
 	public static MapLocation[] enemyPastureLocs;
 	public static RobotInfo[] allyInfo;
 	public static Robot[] allyRobots;
+/*	public static boolean isBugging = false;
+	public static boolean goneAround = false;
+	public static boolean hugLeft = false;
+	public static MapLocation startBuggingLoc;
+	public static Direction startDir;
+	public static int buggingDistance;
+	public static MapLocation desiredLoc;
+	public static int[] myProhibitedDirs = {-1,-1};*/
 	
 	public static void initialize(BasicRobot myRobot)
 	{
