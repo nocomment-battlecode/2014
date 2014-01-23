@@ -42,7 +42,7 @@ public class BreadthFirst {
 	}
 	
 	public static void updateInternalMap(RobotController rc){//can take several rounds, but ultimately saves time
-		mapData = new int[DataCache.coarseWidth+2][DataCache.coarseHeight+2];
+		mapData = new int[DataCache.coarseWidth+3][DataCache.coarseHeight+3];
 		for(int x=0;x<DataCache.coarseWidth;x++){
 			for(int y=0;y<DataCache.coarseHeight;y++){
 				int val = MapAssessment.coarseMap[x][y];
@@ -60,16 +60,20 @@ public class BreadthFirst {
 	public static ArrayList<MapLocation> pathTo(MapLocation start,MapLocation uncheckedGoal, int maxSearchDist) throws GameActionException {
 		//check that goal is inside the size of the coarsened map
 		MapLocation goal = trimGoal(uncheckedGoal);
+		//System.out.println("goal is " + String.valueOf(uncheckedGoal.x) + ", " + String.valueOf(uncheckedGoal.y) + ", trimmed is " + String.valueOf(goal.x) + ", " + String.valueOf(goal.y));
+
 		//save pathingData for each starting location- it is a reusable solution for any goal!
 		if(storedPathingData.containsKey(start)){
 			pathingData = storedPathingData.get(start);
 		}else{
 			//clear path info for next computation
 			shortestPathLocated = false;
-			pathingData = new Direction[DataCache.coarseWidth][DataCache.coarseHeight];//direction to arrive at this tile fastest
-			distanceData = new int[DataCache.coarseWidth][DataCache.coarseHeight];//closest distance to this tile
+			pathingData = new Direction[DataCache.coarseWidth+1][DataCache.coarseHeight+1];//direction to arrive at this tile fastest
+			distanceData = new int[DataCache.coarseWidth+1][DataCache.coarseHeight+1];//closest distance to this tile
 			ArrayList<MapLocation> outermost = new ArrayList<MapLocation>();
 			outermost.add(start);
+			System.out.println("cw x ch " + String.valueOf(DataCache.coarseWidth) + " x " + String.valueOf(DataCache.coarseHeight));
+			System.out.println("start: " + String.valueOf(start.x) + ", " + String.valueOf(start.y));
 			distanceData[start.x][start.y] = -maxSearchDist*10;//the 10 allows a multiple of 14 for diagonals
 			while(!shortestPathLocated&&outermost.size()>0){
 				//System.out.println("outermost Length is "+outermost.size());

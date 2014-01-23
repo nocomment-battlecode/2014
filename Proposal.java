@@ -20,9 +20,9 @@ public class Proposal {
 		for(Direction d:consideredDirs){
 			Proposal p;
 			if(d.isDiagonal()){
-				p = new Proposal(locus.add(d),d,distToLocus+incrementalDist*14);
+				p = new Proposal(locus.add(d), d, distToLocus+incrementalDist*14);
 			}else{
-				p = new Proposal(locus.add(d),d,distToLocus+incrementalDist*10);
+				p = new Proposal(locus.add(d), d, distToLocus+incrementalDist*10);
 			}
 			int val = BreadthFirst.getMapData(p.loc);
 			if(val>0){//not off-map or entirely void-filled
