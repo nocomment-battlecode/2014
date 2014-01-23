@@ -30,7 +30,7 @@ public class HQRobot extends BasicRobot
 				try{
 					runHQ();
 				}catch (Exception e){
-					//e.printStackTrace();
+					e.printStackTrace();
 				}
 				rc.yield();
 			}

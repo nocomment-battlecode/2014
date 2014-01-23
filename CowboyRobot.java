@@ -58,11 +58,14 @@ public class CowboyRobot extends BasicRobot
 		//follow orders from HQ
 		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,10000,rc.getTeam().opponent());
 		Robot[] alliedRobots = rc.senseNearbyGameObjects(Robot.class,rc.getType().sensorRadiusSquared*2,rc.getTeam());//was 
-		if(enemyRobots.length>0){//SHOOT AT, OR RUN TOWARDS, ENEMIES
+		if(enemyRobots.length>0){//SHOOT AT, OR RUN TOWARDS, DETECTABLY NEAR ENEMIES
+			rc.setIndicatorString(0, "Updated: " + String.valueOf(Clock.getRoundNum()) + " attacking");
 			MapLocation[] enemyRobotLocations = VectorFunctions.robotsToLocations(enemyRobots, true);
 			if(enemyRobotLocations.length==0){//only HQ is in view
+				rc.setIndicatorString(2, "Updated: " + String.valueOf(Clock.getRoundNum()) + " navigateByPath");
 				navigateByPath(alliedRobots);
 			}else{//shootable robots are in view
+				rc.setIndicatorString(2, "Updated: " + String.valueOf(Clock.getRoundNum()) + " attacking");
 				MapLocation closestEnemyLoc = VectorFunctions.findClosest(enemyRobotLocations, rc.getLocation());
 				boolean closeEnoughToShoot = closestEnemyLoc.distanceSquaredTo(rc.getLocation())<=rc.getType().attackRadiusMaxSquared;
 				if (DataCache.beingShotAt) BasicPathing.tryToMove(DataCache.selfLoc.directionTo(closestEnemyLoc).opposite(),false,true,false);
@@ -75,14 +78,16 @@ public class CowboyRobot extends BasicRobot
 			}
 		}
 		else if(Clock.getRoundNum() > 0){
+			if(DataCache.numPastures < 5) considerBuildingPastr(alliedRobots);
+			rc.setIndicatorString(0, "Updated: " + String.valueOf(Clock.getRoundNum()) + " just moving");
 			desiredLoc = DataCache.enemyHQLoc;
 			Direction nextDir = getNextDirectionBug();
-			if (nextDir != null) rc.move(nextDir);
+			if (nextDir != null) BasicPathing.tryToMove(nextDir,false,true,false);
 		}
 		else if (DataCache.rallyPoint != null){
 			desiredLoc = DataCache.rallyPoint;
 			Direction nextDir = getNextDirectionBug();
-			if (nextDir != null) rc.move(nextDir);
+			if (nextDir != null) BasicPathing.tryToMove(nextDir,false,true,false);
 			//NAVIGATION BY DOWNLOADED PATH
 			//navigateByPath(alliedRobots);
 			//Direction towardEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
@@ -120,9 +125,9 @@ public class CowboyRobot extends BasicRobot
 	}
 
 	private static void considerBuildingPastr(Robot[] alliedRobots) throws GameActionException {
-		if(alliedRobots.length>3){//there must be allies nearby for defense
+		if(alliedRobots.length>1){//there must be allies nearby for defense
 			MapLocation[] alliedPastrs =rc.sensePastrLocations(rc.getTeam());
-			if(alliedPastrs.length<5&&(rc.readBroadcast(50)+60<Clock.getRoundNum())){//no allied robot can be building a pastr at the same time
+			if(rc.readBroadcast(50)+60<Clock.getRoundNum()){//no allied robot can be building a pastr at the same time
 				for(int i=0;i<20;i++){
 					MapLocation checkLoc = VectorFunctions.mladd(rc.getLocation(),new MapLocation(randall.nextInt(8)-4,randall.nextInt(8)-4));
 					if(rc.canSenseSquare(checkLoc)){
@@ -140,10 +145,18 @@ public class CowboyRobot extends BasicRobot
 					}
 				}
 			}
+			defendPastrs(alliedPastrs);
 		}
 	}
 
+	private static void defendPastrs(MapLocation[] alliedPastrs) throws GameActionException {
+		rc.setIndicatorString(1, "Updated: " + String.valueOf(Clock.getRoundNum()) + " defending");
+		MapLocation closestAlliedPastr = VectorFunctions.findClosest(alliedPastrs, DataCache.selfLoc);
+		if (closestAlliedPastr != null) BasicPathing.tryToMove(DataCache.selfLoc.directionTo(closestAlliedPastr),false,true,false);
+	}
+
 	private static void buildPastr(MapLocation checkLoc) throws GameActionException {
+		rc.setIndicatorString(1, "Updated: " + String.valueOf(Clock.getRoundNum()) + " pasturing");
 		rc.broadcast(50, Clock.getRoundNum());
 		for(int i=0;i<100;i++){//for 100 rounds, try to build a pastr
 			if(rc.isActive()){
@@ -314,7 +327,7 @@ public class CowboyRobot extends BasicRobot
 				myProhibitedDirs[0] = tryDir.opposite().ordinal();
 			}
 		}
-		rc.setIndicatorString(0,tryDir.toString());
+		//rc.setIndicatorString(0,tryDir.toString());
 		return tryDir;
 	}
 
