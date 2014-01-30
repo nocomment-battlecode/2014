@@ -22,6 +22,7 @@ public class CowboyRobot extends BasicRobot
 	static Direction startDir;
 	static int buggingDistance;
 	static MapLocation desiredLoc;
+	static RobotInfo[] curInfo;
 	static int[] myProhibitedDirs = new int[]{-1,-1};
 	public CowboyRobot(RobotController myRC) throws GameActionException
 	{
@@ -65,6 +66,7 @@ public class CowboyRobot extends BasicRobot
 				rc.setIndicatorString(2, "Updated: " + String.valueOf(Clock.getRoundNum()) + " navigateByPath");
 				navigateByPath(alliedRobots);
 			}else{//shootable robots are in view
+				if(DataCache.numPastures < 2) considerBuildingPastr(alliedRobots);
 				rc.setIndicatorString(2, "Updated: " + String.valueOf(Clock.getRoundNum()) + " attacking");
 				MapLocation closestEnemyLoc = VectorFunctions.findClosest(enemyRobotLocations, rc.getLocation());
 				boolean closeEnoughToShoot = closestEnemyLoc.distanceSquaredTo(rc.getLocation())<=rc.getType().attackRadiusMaxSquared;
@@ -145,6 +147,24 @@ public class CowboyRobot extends BasicRobot
 					}
 				}
 			}
+			if(DataCache.numTowers < DataCache.numPastures) {
+				if(rc.readBroadcast(51) + 60<Clock.getRoundNum()){
+					curInfo = new RobotInfo[alliedRobots.length];
+					for(int i=0; i<alliedRobots.length;i++){
+						curInfo[i] = rc.senseRobotInfo(alliedRobots[i]);
+						if(curInfo[i].type == RobotType.PASTR) {
+							for(int j=0; j< 20; j++) {
+								MapLocation checkLoc = VectorFunctions.mladd(rc.getLocation(),new MapLocation(randall.nextInt(8)-4,randall.nextInt(8)-4));
+								if(rc.canSenseSquare(checkLoc)){
+									if(curInfo[i].location.distanceSquaredTo(checkLoc) < 17){
+										buildNT(checkLoc);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 			defendPastrs(alliedPastrs);
 		}
 	}
@@ -165,6 +185,22 @@ public class CowboyRobot extends BasicRobot
 				}else{
 					Direction towardCows = rc.getLocation().directionTo(checkLoc);
 					BasicPathing.tryToMove(towardCows, true,true, true);
+				}
+			}
+			rc.yield();
+		}
+	}
+
+	private static void buildNT(MapLocation checkLoc) throws GameActionException {
+		rc.setIndicatorString(1, "Updated: " + String.valueOf(Clock.getRoundNum()) + " building NT");
+		rc.broadcast(51, Clock.getRoundNum());
+		for(int i=0; i<100; i++){//for 100 rounds, try to build a noise tower
+			if(rc.isActive()){
+				if(rc.getLocation().equals(checkLoc)){
+					rc.construct(RobotType.NOISETOWER);
+				}else{
+					Direction towardGoal = rc.getLocation().directionTo(checkLoc);
+					BasicPathing.tryToMove(towardGoal, true, true, false);
 				}
 			}
 			rc.yield();

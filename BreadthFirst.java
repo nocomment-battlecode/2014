@@ -72,8 +72,8 @@ public class BreadthFirst {
 			distanceData = new int[DataCache.coarseWidth+1][DataCache.coarseHeight+1];//closest distance to this tile
 			ArrayList<MapLocation> outermost = new ArrayList<MapLocation>();
 			outermost.add(start);
-			System.out.println("cw x ch " + String.valueOf(DataCache.coarseWidth) + " x " + String.valueOf(DataCache.coarseHeight));
-			System.out.println("start: " + String.valueOf(start.x) + ", " + String.valueOf(start.y));
+			//System.out.println("cw x ch " + String.valueOf(DataCache.coarseWidth) + " x " + String.valueOf(DataCache.coarseHeight));
+			//System.out.println("start: " + String.valueOf(start.x) + ", " + String.valueOf(start.y));
 			distanceData[start.x][start.y] = -maxSearchDist*10;//the 10 allows a multiple of 14 for diagonals
 			while(!shortestPathLocated&&outermost.size()>0){
 				//System.out.println("outermost Length is "+outermost.size());
